@@ -56,8 +56,8 @@ jobs:
           mkdir -p deploy
           # Copy backend files
           cp -r backend/* deploy/
-          # Copy data file
-          cp BattedBallData.xlsx deploy/
+          # Explicitly copy the data file from backend directory (if not already included)
+          cp backend/BattedBallData.xlsx deploy/
           # Create deployment zip
           cd deploy
           zip -r ../backend.zip .

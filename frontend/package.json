@@ -1,6 +1,5 @@
 {
   "name": "batted-ball-visualizer",
-  "homepage": "https://kfdigitals.com/Braves-TakeHome/",
   "version": "1.0.0",
   "private": true,
   "dependencies": {

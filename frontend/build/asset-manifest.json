@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/Braves-TakeHome/static/js/main.2b3b9224.js",
-    "index.html": "/Braves-TakeHome/index.html",
-    "main.2b3b9224.js.map": "/Braves-TakeHome/static/js/main.2b3b9224.js.map"
+    "main.js": "/static/js/main.2b3b9224.js",
+    "index.html": "/index.html",
+    "main.2b3b9224.js.map": "/static/js/main.2b3b9224.js.map"
   },
   "entrypoints": [
     "static/js/main.2b3b9224.js"

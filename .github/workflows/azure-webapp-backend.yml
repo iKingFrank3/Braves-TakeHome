@@ -1,0 +1,76 @@
+name: Deploy Flask Backend to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+      - backend-cleanup
+  pull_request:
+    branches:
+      - main
+      - backend-cleanup
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          cd backend
+          pytest --cov=./ --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          fail_ci_if_error: true
+
+      - name: Prepare deployment files
+        run: |
+          # Create deployment directory
+          mkdir -p deploy
+          # Copy backend files
+          cp -r backend/* deploy/
+          # Copy data file
+          cp BattedBallData.xlsx deploy/
+          # Create deployment zip
+          cd deploy
+          zip -r ../backend.zip .
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: braves-takehome-backend
+          slot-name: production
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: backend.zip
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment completed. Checking application health..."
+          curl -f https://braves-takehome-backend.azurewebsites.net/health || exit 1 

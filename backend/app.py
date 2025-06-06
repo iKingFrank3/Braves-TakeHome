@@ -4,17 +4,49 @@ import pandas as pd
 import os
 
 app = Flask(__name__)
-CORS(app)
+# Configure CORS for your frontend domain
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://delightful-glacier-085b1650f.6.azurestaticapps.net",
+            "http://localhost:3000"  # For local development
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Load data
-try:
-    df = pd.read_excel('../BattedBallData.xlsx')
-except Exception as e:
-    print(f"Error loading data: {e}")
-    df = pd.DataFrame()
+def load_data():
+    try:
+        # Try to load from Azure path first
+        data_path = os.path.join(os.path.dirname(__file__), 'BattedBallData.xlsx')
+        if not os.path.exists(data_path):
+            # Fallback to relative path
+            data_path = os.path.join(os.path.dirname(__file__), '..', 'BattedBallData.xlsx')
+        
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(f"Data file not found at {data_path}")
+            
+        return pd.read_excel(data_path)
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return pd.DataFrame()
+
+df = load_data()
+
+@app.route('/health')
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "data_loaded": not df.empty
+    }), 200
 
 @app.route('/api/data')
 def get_data():
+    if df.empty:
+        return jsonify({'error': 'Data not loaded'}), 500
+        
     try:
         # Get filter parameters from request
         batter = request.args.get('batter')
@@ -50,13 +82,16 @@ def get_data():
 
 @app.route('/api/summary')
 def get_summary():
+    if df.empty:
+        return jsonify({'error': 'Data not loaded'}), 500
+        
     try:
         summary = {
-            'avg_exit_speed': df['EXIT_SPEED'].mean(),
-            'avg_launch_angle': df['LAUNCH_ANGLE'].mean(),
-            'total_batted_balls': len(df),
-            'unique_batters': df['BATTER'].nunique(),
-            'unique_pitchers': df['PITCHER'].nunique()
+            'avg_exit_speed': float(df['EXIT_SPEED'].mean()),
+            'avg_launch_angle': float(df['LAUNCH_ANGLE'].mean()),
+            'total_batted_balls': int(len(df)),
+            'unique_batters': int(df['BATTER'].nunique()),
+            'unique_pitchers': int(df['PITCHER'].nunique())
         }
         return jsonify(summary)
     except Exception as e:

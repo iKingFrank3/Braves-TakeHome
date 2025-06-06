@@ -27,6 +27,7 @@ import {
   Legend
 } from 'chart.js';
 import axios from 'axios';
+import config from './config';
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
 
@@ -52,7 +53,7 @@ function App() {
         if (value) params.append(key, value);
       });
       
-      const response = await axios.get(`http://localhost:5000/api/data?${params}`);
+      const response = await axios.get(`${config.apiUrl}/api/data?${params}`);
       setData(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -63,7 +64,7 @@ function App() {
 
   const fetchSummary = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/summary');
+      const response = await axios.get(`${config.apiUrl}/api/summary`);
       setSummary(response.data);
     } catch (error) {
       console.error('Error fetching summary:', error);

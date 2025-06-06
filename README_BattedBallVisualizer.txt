@@ -1,4 +1,3 @@
-
 📘 Batted Ball Data Visualizer - README.txt
 ===========================================
 
@@ -136,8 +135,133 @@ function App() {
 
 export default App;
 
+Modal Implementation
+-------------------
+1. Install Required Dependencies:
+   ```bash
+   cd frontend
+   npm install @mui/material @emotion/react @emotion/styled
+   ```
+
+2. Create Modal Component (src/components/BallDetailsModal.js):
+   ```javascript
+   import React from 'react';
+   import { Modal, Box, Typography, Button } from '@mui/material';
+
+   const style = {
+     position: 'absolute',
+     top: '50%',
+     left: '50%',
+     transform: 'translate(-50%, -50%)',
+     width: 400,
+     bgcolor: 'background.paper',
+     boxShadow: 24,
+     p: 4,
+     borderRadius: 2,
+   };
+
+   function BallDetailsModal({ open, handleClose, ballData }) {
+     return (
+       <Modal
+         open={open}
+         onClose={handleClose}
+         aria-labelledby="ball-details-modal"
+       >
+         <Box sx={style}>
+           <Typography variant="h6" component="h2">
+             Batted Ball Details
+           </Typography>
+           {ballData && (
+             <>
+               <Typography>Batter: {ballData.BATTER}</Typography>
+               <Typography>Pitcher: {ballData.PITCHER}</Typography>
+               <Typography>Exit Speed: {ballData.EXIT_SPEED} mph</Typography>
+               <Typography>Launch Angle: {ballData.LAUNCH_ANGLE}°</Typography>
+               <Typography>Distance: {ballData.HIT_DISTANCE} ft</Typography>
+               <Typography>Outcome: {ballData.PLAY_OUTCOME}</Typography>
+             </>
+           )}
+           <Button onClick={handleClose} sx={{ mt: 2 }}>
+             Close
+           </Button>
+         </Box>
+       </Modal>
+     );
+   }
+
+   export default BallDetailsModal;
+   ```
+
+3. Update App.js to Use Modal:
+   ```javascript
+   import React, { useEffect, useState } from 'react';
+   import axios from 'axios';
+   import { Line } from 'react-chartjs-2';
+   import BallDetailsModal from './components/BallDetailsModal';
+
+   function App() {
+     const [data, setData] = useState([]);
+     const [selectedBall, setSelectedBall] = useState(null);
+     const [modalOpen, setModalOpen] = useState(false);
+
+     useEffect(() => {
+       axios.get('http://localhost:5000/api/data')
+         .then(res => setData(res.data));
+     }, []);
+
+     const handleBallClick = (ballData) => {
+       setSelectedBall(ballData);
+       setModalOpen(true);
+     };
+
+     const handleCloseModal = () => {
+       setModalOpen(false);
+       setSelectedBall(null);
+     };
+
+     const chartData = {
+       labels: data.map(d => d.BATTER),
+       datasets: [{
+         label: 'Exit Speed',
+         data: data.map(d => d.EXIT_SPEED),
+         borderColor: 'blue',
+         fill: false
+       }]
+     };
+
+     return (
+       <div>
+         <h1>Batted Ball Data</h1>
+         <Line 
+           data={chartData}
+           options={{
+             onClick: (_, elements) => {
+               if (elements.length > 0) {
+                 const index = elements[0].index;
+                 handleBallClick(data[index]);
+               }
+             }
+           }}
+         />
+         <BallDetailsModal
+           open={modalOpen}
+           handleClose={handleCloseModal}
+           ballData={selectedBall}
+         />
+       </div>
+     );
+   }
+
+   export default App;
+   ```
+
+4. Usage:
+   - Click on any data point in the chart to open the modal
+   - Modal displays detailed information about the selected batted ball
+   - Click outside the modal or the close button to dismiss
+
 Support
 -------
-If your hosting provider doesn’t support Python, you can host just the static frontend and use a backend service like Render, Railway, or Replit to deploy Flask.
+If your hosting provider doesn't support Python, you can host just the static frontend and use a backend service like Render, Railway, or Replit to deploy Flask.
 
 Licensed under MIT.

@@ -52,14 +52,7 @@ jobs:
 
       - name: Prepare deployment files
         run: |
-          # Create deployment directory
-          mkdir -p deploy
-          # Copy backend files
-          cp -r backend/* deploy/
-          # Explicitly copy the data file from backend directory (if not already included)
-          cp backend/BattedBallData.xlsx deploy/
-          # Create deployment zip
-          cd deploy
+          cd backend
           zip -r ../backend.zip .
 
       - name: Deploy to Azure Web App

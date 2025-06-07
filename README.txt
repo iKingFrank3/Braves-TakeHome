@@ -1,123 +1,151 @@
-MLB Batted Ball Data Visualizer
-==============================
+# MLB Batted Ball Visualizer
 
-Overview
---------
-This web application visualizes MLB batted ball data in an interactive and user-friendly interface. It allows users to explore batted ball metrics, filter by players, and view detailed statistics including video replays when available.
+A web application for visualizing MLB batted ball data, deployed on Azure.
 
-Key Features
------------
-- Interactive scatter plot of Exit Speed vs Launch Angle
-- Real-time filtering by batter and pitcher names
-- Detailed modal view for each batted ball event
-- Embedded video replays (when available)
-- Summary statistics dashboard
-- Responsive design for all device sizes
+Live Demo: [https://delightful-glacier-085b1650f.6.azurestaticapps.net/](https://delightful-glacier-085b1650f.6.azurestaticapps.net/)
 
-Tech Stack
-----------
-Frontend:
-- React.js
-- Material-UI (MUI) for UI components
-- Chart.js for data visualization
-- Axios for API requests
+## Project Structure
+```
+Braves-TakeHome/
+├── frontend/           # React frontend application
+├── app.py             # Flask backend application
+├── requirements.txt   # Python dependencies
+├── BattedBallData.xlsx # Data file
+└── README.md          # This file
+```
 
-Backend:
-- Python Flask
-- Pandas for data processing
-- Flask-CORS for cross-origin support
+## Local Development Setup
 
-Installation & Setup
--------------------
-1. Clone the repository:
+### Prerequisites
+- Python 3.9 or higher
+- Node.js 14 or higher
+- VS Code
+- Git
+- Azure CLI
+
+### Backend Setup
+1. Create and activate a virtual environment:
    ```bash
-   git clone https://github.com/KingFrank/Braves-TakeHome.git
-   cd Braves-TakeHome
+   python -m venv env
+   source env/bin/activate  # On Windows: env\Scripts\activate
    ```
 
-2. Backend Setup:
+2. Install Python dependencies:
    ```bash
-   cd backend
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
-   python3 app.py
+   ```
+
+3. Run the backend server:
+   ```bash
+   python app.py
    ```
    The backend server will run on http://localhost:5000
 
-3. Frontend Setup:
+### Frontend Setup
+1. Navigate to the frontend directory:
    ```bash
    cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
    npm install
+   ```
+
+3. Start the development server:
+   ```bash
    npm start
    ```
    The frontend will run on http://localhost:3000
 
-Deployment
-----------
-The application is deployed on cPanel and can be accessed at:
-https://kfdigitals.com/Braves-TakeHome
+## Deployment to Azure
 
-GitHub Repository:
-https://github.com/KingFrank/Braves-TakeHome
+### 1. GitHub Setup
+1. Initialize Git repository (if not already done):
+   ```bash
+   git init
+   ```
 
-Deployment Steps:
+2. Create a new repository on GitHub
+
+3. Add your files and push to GitHub:
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin <your-github-repo-url>
+   git push -u origin main
+   ```
+
+### 2. Azure Setup
+1. Install Azure CLI and login:
+   ```bash
+   az login
+   ```
+
+2. Create Azure resources:
+   ```bash
+   # Create resource group
+   az group create --name BravesTakeHome --location centralus
+
+   # Create App Service Plan
+   az appservice plan create --name BravesTakeHomePlan --resource-group BravesTakeHome --sku B1 --is-linux
+
+   # Create Web App for backend
+   az webapp create --resource-group BravesTakeHome --plan BravesTakeHomePlan --name braves-takehome-backend --runtime "PYTHON:3.9"
+
+   # Create Static Web App for frontend
+   az staticwebapp create --name braves-takehome-frontend --resource-group BravesTakeHome --location centralus
+   ```
+
+### 3. Deploy Backend
+1. Deploy using the provided script:
+   ```bash
+   chmod +x deploy.sh
+   ./deploy.sh
+   ```
+
+2. Configure CORS in Azure Portal:
+   - Go to your Web App > Configuration > CORS
+   - Add your frontend URL: `https://delightful-glacier-085b1650f.6.azurestaticapps.net`
+
+### 4. Deploy Frontend
 1. Build the React application:
    ```bash
    cd frontend
    npm run build
    ```
 
-2. Upload to cPanel:
-   ```bash
-   # Initialize git in the project directory
-   git init
-   
-   # Add cPanel repository as remote
-   git remote add production https://kfdigitals.com:2083/repository.git
-   
-   # Add all files
-   git add .
-   
-   # Commit changes
-   git commit -m "Initial deployment"
-   
-   # Push to cPanel
-   git push production main
-   ```
+2. Deploy to Azure Static Web Apps:
+   - Connect your GitHub repository to Azure Static Web Apps
+   - Configure build settings:
+     - App location: `/frontend`
+     - Output location: `build`
+     - Build command: `npm run build`
 
-3. Configure cPanel:
-   - Set document root to /public_html/Braves-TakeHome
-   - Configure Python application in cPanel
-   - Set up SSL certificate for secure HTTPS access
+## Environment Variables
+- Backend API URL: Set in `frontend/src/config.js`
+- CORS Origins: Configured in `app.py` and Azure Portal
 
-Project Structure
-----------------
-```
-project/
-├── backend/
-│   ├── app.py              # Flask application
-│   ├── requirements.txt    # Python dependencies
-│   └── venv/              # Python virtual environment
-└── frontend/
-    ├── public/            # Static files
-    ├── src/              # React source code
-    │   └── App.js        # Main application component
-    └── package.json      # Node.js dependencies
-```
+## Troubleshooting
+1. If backend fails to start:
+   - Check Azure Web App logs
+   - Verify Python version and dependencies
+   - Ensure CORS is properly configured
 
-API Endpoints
-------------
-- GET /api/data - Returns filtered batted ball data
-- GET /api/summary - Returns summary statistics
+2. If frontend can't connect to backend:
+   - Verify API URL in `config.js`
+   - Check CORS settings
+   - Ensure backend is running and accessible
 
-Contributing
------------
-Feel free to submit issues and enhancement requests!
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-License
--------
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Footnote
+This project is created by Amani Franklin on 6/6/2025. 
 
 Contact
 -------
